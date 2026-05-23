@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Language Demo Translator</title>
+  <title>SignSense | Sign Language Translator</title>
 
   <style>
     * {
@@ -15,9 +15,54 @@
 
     body {
       min-height: 100vh;
-      background: radial-gradient(circle at top, #111827, #020617);
+      background: linear-gradient(135deg, #020617, #111827, #1e1b4b);
       color: white;
+      padding: 20px;
+    }
+
+    .app {
+      max-width: 1150px;
+      margin: auto;
+    }
+
+    .hero {
+      text-align: center;
+      margin: 18px 0 28px;
+    }
+
+    .hero h1 {
+      font-size: clamp(34px, 7vw, 64px);
+      color: #67e8f9;
+      text-shadow: 0 0 24px rgba(103, 232, 249, 0.65);
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      color: #cbd5e1;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 28px;
+      padding: 18px;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(16px);
+    }
+
+    .camera-wrap {
+      position: relative;
       overflow: hidden;
+      min-height: 520px;
     }
 
     video {
@@ -25,92 +70,226 @@
     }
 
     canvas {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 520px;
+      display: block;
+      border-radius: 22px;
+      background: #020617;
     }
 
-    .panel {
-      position: fixed;
-      left: 50%;
-      bottom: 35px;
-      transform: translateX(-50%);
-      width: min(90%, 620px);
-      background: rgba(15, 23, 42, 0.82);
-      border: 1px solid rgba(56, 189, 248, 0.4);
-      border-radius: 24px;
-      padding: 24px;
+    .camera-label {
+      position: absolute;
+      left: 34px;
+      top: 34px;
+      background: rgba(2, 6, 23, 0.74);
+      border: 1px solid rgba(103, 232, 249, 0.35);
+      color: #67e8f9;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+
+    .side {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .translation-box {
       text-align: center;
-      backdrop-filter: blur(14px);
-      box-shadow: 0 0 35px rgba(34, 211, 238, 0.18);
-      z-index: 10;
+      padding: 26px 18px;
     }
 
     .label {
-      font-size: 14px;
-      letter-spacing: 2px;
       color: #67e8f9;
-      margin-bottom: 10px;
+      font-size: 13px;
+      letter-spacing: 2px;
       text-transform: uppercase;
+      margin-bottom: 12px;
     }
 
     #translation {
-      font-size: clamp(34px, 8vw, 70px);
-      font-weight: 800;
+      font-size: clamp(38px, 7vw, 72px);
       color: #f9a8d4;
-      text-shadow: 0 0 22px rgba(244, 114, 182, 0.8);
-      margin-bottom: 10px;
+      font-weight: 900;
+      text-shadow: 0 0 24px rgba(244, 114, 182, 0.8);
+      margin-bottom: 12px;
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #hint {
       color: #cbd5e1;
+      line-height: 1.6;
       font-size: 15px;
+      min-height: 48px;
+    }
+
+    .confidence {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .confidence-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    .bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(148, 163, 184, 0.22);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #barFill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #22d3ee, #f472b6);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    button {
+      border: none;
+      padding: 13px 17px;
+      border-radius: 999px;
+      background: #67e8f9;
+      color: #020617;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+
+    .guide h2 {
+      color: #67e8f9;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+
+    .sign-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .sign {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .emoji {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .sign strong {
+      display: block;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .sign span {
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .note {
+      margin-top: 16px;
+      color: #94a3b8;
+      font-size: 13px;
       line-height: 1.6;
     }
 
-    .top {
-      position: fixed;
-      top: 22px;
-      left: 22px;
-      z-index: 10;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      border-radius: 18px;
-      padding: 16px;
-      max-width: 340px;
-      backdrop-filter: blur(12px);
-    }
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
 
-    .top h1 {
-      font-size: 20px;
-      margin-bottom: 8px;
-      color: #67e8f9;
-    }
+      canvas {
+        height: 430px;
+      }
 
-    .top p {
-      color: #cbd5e1;
-      font-size: 14px;
-      line-height: 1.5;
+      .camera-wrap {
+        min-height: 430px;
+      }
     }
   </style>
 </head>
 <body>
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas"></canvas>
+  <main class="app">
+    <section class="hero">
+      <h1>SignSense</h1>
+      <p>Camera-based sign language demo translator. Show your hand and let the app detect simple signs.</p>
+    </section>
 
-  <div class="top">
-    <h1>Sign Language Demo</h1>
-    <p>
-      Allow camera. Cuba tunjuk open palm, fist, peace sign, thumbs up, atau I love you sign.
-    </p>
-  </div>
+    <section class="grid">
+      <div class="card camera-wrap">
+        <div class="camera-label">LIVE HAND TRACKING</div>
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+      </div>
 
-  <div class="panel">
-    <div class="label">Translation</div>
-    <div id="translation">Loading...</div>
-    <div id="hint">Show your hand clearly to the camera.</div>
-  </div>
+      <div class="side">
+        <div class="card translation-box">
+          <div class="label">Detected Translation</div>
+          <div id="translation">Loading</div>
+          <div id="hint">Allow camera and show your hand clearly.</div>
+
+          <div class="confidence">
+            <div class="confidence-row">
+              <span>Confidence</span>
+              <span id="confidenceText">0%</span>
+            </div>
+            <div class="bar">
+              <div id="barFill"></div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button onclick="speakNow()">Speak Translation</button>
+            <button class="secondary" onclick="toggleMirror()">Mirror Camera</button>
+          </div>
+        </div>
+
+        <div class="card guide">
+          <h2>Try These Signs</h2>
+          <div class="sign-list">
+            <div class="sign"><div class="emoji">✋</div><strong>Hello</strong><span>Open palm</span></div>
+            <div class="sign"><div class="emoji">👍</div><strong>Good</strong><span>Thumbs up</span></div>
+            <div class="sign"><div class="emoji">✌️</div><strong>Peace</strong><span>Index + middle</span></div>
+            <div class="sign"><div class="emoji">✊</div><strong>Stop</strong><span>Closed fist</span></div>
+            <div class="sign"><div class="emoji">☝️</div><strong>One</strong><span>Index only</span></div>
+            <div class="sign"><div class="emoji">🤟</div><strong>I Love You</strong><span>Thumb + index + pinky</span></div>
+          </div>
+          <p class="note">Note: This is a demo. Real sign language translation needs a trained AI model and proper sign language dataset.</p>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
@@ -121,95 +300,78 @@
     const ctx = canvas.getContext("2d");
     const translation = document.getElementById("translation");
     const hint = document.getElementById("hint");
+    const confidenceText = document.getElementById("confidenceText");
+    const barFill = document.getElementById("barFill");
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    let lastTranslation = "";
+    let mirror = true;
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    function setCanvasSize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
     }
 
-    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("resize", setCanvasSize);
+    setTimeout(setCanvasSize, 200);
 
     function distance(a, b) {
       return Math.hypot(a.x - b.x, a.y - b.y);
     }
 
-    function fingerIsUp(landmarks, tip, pip) {
-      return landmarks[tip].y < landmarks[pip].y;
+    function fingerIsUp(lm, tip, pip) {
+      return lm[tip].y < lm[pip].y;
     }
 
-    function thumbIsUp(landmarks) {
-      const wrist = landmarks[0];
-      const thumbTip = landmarks[4];
-      const thumbIp = landmarks[3];
-      const indexMcp = landmarks[5];
-
+    function thumbIsUp(lm) {
+      const wrist = lm[0];
+      const thumbTip = lm[4];
+      const thumbIp = lm[3];
+      const indexMcp = lm[5];
       const thumbAway = distance(thumbTip, indexMcp) > distance(thumbIp, indexMcp);
       const thumbHigher = thumbTip.y < wrist.y;
-
       return thumbAway && thumbHigher;
     }
 
-    function detectGesture(landmarks) {
-      const thumb = thumbIsUp(landmarks);
-      const index = fingerIsUp(landmarks, 8, 6);
-      const middle = fingerIsUp(landmarks, 12, 10);
-      const ring = fingerIsUp(landmarks, 16, 14);
-      const pinky = fingerIsUp(landmarks, 20, 18);
-
+    function detectGesture(lm) {
+      const thumb = thumbIsUp(lm);
+      const index = fingerIsUp(lm, 8, 6);
+      const middle = fingerIsUp(lm, 12, 10);
+      const ring = fingerIsUp(lm, 16, 14);
+      const pinky = fingerIsUp(lm, 20, 18);
       const upCount = [thumb, index, middle, ring, pinky].filter(Boolean).length;
 
       if (thumb && index && pinky && !middle && !ring) {
-        return {
-          text: "I Love You",
-          hint: "Detected: thumb + index + pinky up"
-        };
+        return { text: "I Love You", hint: "Thumb + index + pinky detected.", confidence: 96 };
       }
-
       if (!thumb && index && middle && !ring && !pinky) {
-        return {
-          text: "Peace",
-          hint: "Detected: index + middle up"
-        };
+        return { text: "Peace", hint: "Index + middle detected.", confidence: 93 };
       }
-
       if (thumb && !index && !middle && !ring && !pinky) {
-        return {
-          text: "Good",
-          hint: "Detected: thumbs up"
-        };
+        return { text: "Good", hint: "Thumbs up detected.", confidence: 90 };
       }
-
       if (!thumb && !index && !middle && !ring && !pinky) {
-        return {
-          text: "Stop / Fist",
-          hint: "Detected: closed hand"
-        };
+        return { text: "Stop", hint: "Closed fist detected.", confidence: 88 };
       }
-
       if (upCount >= 4) {
-        return {
-          text: "Hello",
-          hint: "Detected: open palm"
-        };
+        return { text: "Hello", hint: "Open palm detected.", confidence: 92 };
       }
-
       if (index && !middle && !ring && !pinky) {
-        return {
-          text: "One / Pointing",
-          hint: "Detected: index finger up"
-        };
+        return { text: "One", hint: "Index finger detected.", confidence: 84 };
       }
-
-      return {
-        text: "Unknown Sign",
-        hint: "Try open palm, fist, peace, thumbs up, or I love you."
-      };
+      return { text: "Unknown", hint: "Try one of the signs in the guide.", confidence: 35 };
     }
 
-    function drawHand(landmarks) {
+    function drawBackground(w, h) {
+      const gradient = ctx.createRadialGradient(w / 2, h / 2, 80, w / 2, h / 2, w);
+      gradient.addColorStop(0, "#111827");
+      gradient.addColorStop(1, "#020617");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function drawHand(lm, w, h) {
       const connections = [
         [0,1],[1,2],[2,3],[3,4],
         [0,5],[5,6],[6,7],[7,8],
@@ -219,24 +381,50 @@
         [5,9],[9,13],[13,17]
       ];
 
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = "rgba(34, 211, 238, 0.9)";
-      ctx.shadowBlur = 18;
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "rgba(34, 211, 238, 0.95)";
+      ctx.shadowBlur = 16;
       ctx.shadowColor = "#22d3ee";
 
       connections.forEach(([a, b]) => {
+        const ax = mirror ? w - lm[a].x * w : lm[a].x * w;
+        const bx = mirror ? w - lm[b].x * w : lm[b].x * w;
         ctx.beginPath();
-        ctx.moveTo(landmarks[a].x * canvas.width, landmarks[a].y * canvas.height);
-        ctx.lineTo(landmarks[b].x * canvas.width, landmarks[b].y * canvas.height);
+        ctx.moveTo(ax, lm[a].y * h);
+        ctx.lineTo(bx, lm[b].y * h);
         ctx.stroke();
       });
 
-      landmarks.forEach((point, index) => {
+      lm.forEach((point, i) => {
+        const x = mirror ? w - point.x * w : point.x * w;
+        const y = point.y * h;
         ctx.beginPath();
-        ctx.arc(point.x * canvas.width, point.y * canvas.height, index === 0 ? 8 : 6, 0, Math.PI * 2);
-        ctx.fillStyle = index === 0 ? "#f472b6" : "#67e8f9";
+        ctx.arc(x, y, i === 0 ? 9 : 6, 0, Math.PI * 2);
+        ctx.fillStyle = i === 0 ? "#f472b6" : "#67e8f9";
         ctx.fill();
       });
+
+      ctx.shadowBlur = 0;
+    }
+
+    function updateResult(result) {
+      translation.textContent = result.text;
+      hint.textContent = result.hint;
+      confidenceText.textContent = result.confidence + "%";
+      barFill.style.width = result.confidence + "%";
+      lastTranslation = result.text;
+    }
+
+    function speakNow() {
+      if (!lastTranslation || lastTranslation === "Unknown" || lastTranslation === "No Hand") return;
+      const utter = new SpeechSynthesisUtterance(lastTranslation);
+      utter.lang = "en-US";
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    }
+
+    function toggleMirror() {
+      mirror = !mirror;
     }
 
     const hands = new Hands({
@@ -246,32 +434,22 @@
     hands.setOptions({
       maxNumHands: 1,
       modelComplexity: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.7
+      minDetectionConfidence: 0.72,
+      minTrackingConfidence: 0.72
     });
 
     hands.onResults(results => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const gradient = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, 80,
-        canvas.width / 2, canvas.height / 2, canvas.width
-      );
-      gradient.addColorStop(0, "#111827");
-      gradient.addColorStop(1, "#020617");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+      drawBackground(w, h);
 
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const landmarks = results.multiHandLandmarks[0];
-        drawHand(landmarks);
-
-        const result = detectGesture(landmarks);
-        translation.textContent = result.text;
-        hint.textContent = result.hint;
+        const lm = results.multiHandLandmarks[0];
+        drawHand(lm, w, h);
+        updateResult(detectGesture(lm));
       } else {
-        translation.textContent = "No Hand";
-        hint.textContent = "Show your hand clearly in front of the camera.";
+        updateResult({ text: "No Hand", hint: "Show your hand clearly in the camera.", confidence: 0 });
       }
     });
 
@@ -284,8 +462,7 @@
     });
 
     camera.start().catch(() => {
-      translation.textContent = "Camera Blocked";
-      hint.textContent = "Allow camera permission in your browser settings.";
+      updateResult({ text: "Camera Blocked", hint: "Allow camera permission in your browser settings.", confidence: 0 });
     });
   </script>
 </body>
