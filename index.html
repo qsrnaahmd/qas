@@ -1,236 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Qas Bakery</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>For You</title>
 
   <style>
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:'Poppins',sans-serif;
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
 
     body{
-      background:#fff7f8;
-      color:#333;
-    }
-
-    header{
-      background:linear-gradient(135deg,#ffc1cc,#ffd6dc);
-      padding:90px 20px;
-      text-align:center;
-    }
-
-    header h1{
-      font-size:55px;
-      color:#2b2b2b;
-      margin-bottom:15px;
-    }
-
-    header p{
-      max-width:600px;
-      margin:auto;
-      font-size:18px;
-      margin-bottom:30px;
-      line-height:1.7;
-    }
-
-    .btn{
-      display:inline-block;
-      padding:14px 28px;
-      background:#2b2b2b;
-      color:white;
-      text-decoration:none;
-      border-radius:40px;
-      font-weight:600;
-      transition:0.3s;
-    }
-
-    .btn:hover{
-      transform:scale(1.05);
-    }
-
-    section{
-      padding:70px 20px;
-      max-width:1100px;
-      margin:auto;
-    }
-
-    .title{
-      text-align:center;
-      font-size:38px;
-      margin-bottom:45px;
-    }
-
-    .about{
-      text-align:center;
-      max-width:750px;
-      margin:auto;
-      line-height:1.8;
-      font-size:18px;
-    }
-
-    .cards{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-      gap:25px;
-    }
-
-    .card{
-      background:white;
-      border-radius:24px;
+      height:100vh;
       overflow:hidden;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
-      transition:0.3s;
+      background:#030712;
+      color:white;
+      font-family:Courier New, monospace;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
-    .card:hover{
-      transform:translateY(-5px);
+    canvas{
+      position:fixed;
+      inset:0;
+      z-index:1;
     }
 
-    .card img{
-      width:100%;
-      height:220px;
-      object-fit:cover;
-    }
-
-    .card-content{
+    .content{
+      position:relative;
+      z-index:2;
+      text-align:center;
       padding:20px;
     }
 
-    .card h3{
-      margin-bottom:10px;
-      font-size:24px;
+    .small{
+      color:#38bdf8;
+      margin-bottom:20px;
+      letter-spacing:3px;
+      animation:blink 1.3s infinite;
     }
 
-    .price{
-      margin-top:12px;
-      color:#ff4f81;
-      font-size:22px;
-      font-weight:700;
+    h1{
+      font-size:clamp(42px,10vw,110px);
+      color:#22d3ee;
+      text-shadow:
+        0 0 10px #22d3ee,
+        0 0 25px #22d3ee,
+        0 0 50px #0ea5e9;
+      animation:glitch 1.5s infinite;
     }
 
-    .contact{
-      background:#ffe5ec;
-      border-radius:30px;
-      text-align:center;
-      padding:50px 20px;
-    }
-
-    .contact p{
-      margin:10px 0;
+    .sub{
+      margin-top:25px;
+      color:#f9a8d4;
       font-size:18px;
+      text-shadow:0 0 12px #f472b6;
     }
 
-    footer{
-      background:#2b2b2b;
-      color:white;
-      text-align:center;
-      padding:25px;
-      margin-top:60px;
+    @keyframes blink{
+      50%{opacity:.25}
     }
 
+    @keyframes glitch{
+      0%,100%{transform:translate(0)}
+      20%{transform:translate(-2px,2px)}
+      40%{transform:translate(2px,-2px)}
+      60%{transform:translate(-1px,-1px)}
+      80%{transform:translate(1px,1px)}
+    }
   </style>
 </head>
 
 <body>
+  <canvas id="canvas"></canvas>
 
-  <header>
-    <h1>Qas Bakery 🍰</h1>
+  <div class="content">
+    <p class="small">SYSTEM MESSAGE LOADING...</p>
+    <h1>I LOVE YOU</h1>
+    <p class="sub">coded just for you ♡</p>
+  </div>
 
-    <p>
-      Homemade desserts, brownies, cakes and sweet treats made with love.
-      Perfect for birthdays, gifts and cravings.
-    </p>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
 
-    <a class="btn" href="https://wa.me/60123456789">
-      Order Sekarang
-    </a>
-  </header>
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
 
-  <section>
-    <h2 class="title">Tentang Kami</h2>
+    let particles = [];
 
-    <p class="about">
-      Qas Bakery menyediakan dessert homemade yang fresh, sedap dan aesthetic.
-      Kami menerima tempahan birthday cake, brownies, dessert cup dan surprise gift.
-    </p>
-  </section>
+    for(let i = 0; i < 120; i++){
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 2 + 1,
+        dx: (Math.random() - 0.5) * 1,
+        dy: (Math.random() - 0.5) * 1
+      });
+    }
 
-  <section>
-    <h2 class="title">Menu Popular</h2>
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    <div class="cards">
+      particles.forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle="#22d3ee";
+        ctx.shadowBlur=15;
+        ctx.shadowColor="#22d3ee";
+        ctx.fill();
 
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80">
+        p.x += p.dx;
+        p.y += p.dy;
 
-        <div class="card-content">
-          <h3>Chocolate Brownies</h3>
+        if(p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if(p.y < 0 || p.y > canvas.height) p.dy *= -1;
+      });
 
-          <p>Brownies fudgy dan rich chocolate.</p>
+      for(let i=0;i<particles.length;i++){
+        for(let j=i+1;j<particles.length;j++){
+          let a = particles[i];
+          let b = particles[j];
+          let dist = Math.hypot(a.x-b.x,a.y-b.y);
 
-          <div class="price">RM25</div>
-        </div>
-      </div>
+          if(dist < 120){
+            ctx.beginPath();
+            ctx.moveTo(a.x,a.y);
+            ctx.lineTo(b.x,b.y);
+            ctx.strokeStyle="rgba(34,211,238,0.15)";
+            ctx.stroke();
+          }
+        }
+      }
 
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80">
+      requestAnimationFrame(draw);
+    }
 
-        <div class="card-content">
-          <h3>Birthday Cake</h3>
+    draw();
 
-          <p>Mini cake comel untuk surprise.</p>
-
-          <div class="price">RM45</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=800&q=80">
-
-        <div class="card-content">
-          <h3>Dessert Cup</h3>
-
-          <p>Sweet creamy dessert cup aesthetic.</p>
-
-          <div class="price">RM8</div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <section>
-    <div class="contact">
-
-      <h2 class="title">Contact</h2>
-
-      <p>📍 Taiping, Perak</p>
-
-      <p>📷 Instagram: @affiflovesqasrina</p>
-
-      <p>📱 WhatsApp: 012-3456789</p>
-
-      <br>
-
-      <a class="btn" href="https://wa.me/60123456789">
-        WhatsApp Sekarang
-      </a>
-
-    </div>
-  </section>
-
-  <footer>
-    © 2026 Qas Bakery. All rights reserved.
-  </footer>
-
+    addEventListener("resize",()=>{
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+    });
+  </script>
 </body>
 </html>
