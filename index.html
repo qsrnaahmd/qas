@@ -1,143 +1,141 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>For You</title>
-
+  <title>Hand Particle Art</title>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-
-    body{
-      height:100vh;
-      overflow:hidden;
-      background:#030712;
-      color:white;
-      font-family:Courier New, monospace;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    canvas{
-      position:fixed;
-      inset:0;
-      z-index:1;
-    }
-
-    .content{
-      position:relative;
-      z-index:2;
-      text-align:center;
-      padding:20px;
-    }
-
-    .small{
-      color:#38bdf8;
-      margin-bottom:20px;
-      letter-spacing:3px;
-      animation:blink 1.3s infinite;
-    }
-
-    h1{
-      font-size:clamp(42px,10vw,110px);
-      color:#22d3ee;
-      text-shadow:
-        0 0 10px #22d3ee,
-        0 0 25px #22d3ee,
-        0 0 50px #0ea5e9;
-      animation:glitch 1.5s infinite;
-    }
-
-    .sub{
-      margin-top:25px;
-      color:#f9a8d4;
-      font-size:18px;
-      text-shadow:0 0 12px #f472b6;
-    }
-
-    @keyframes blink{
-      50%{opacity:.25}
-    }
-
-    @keyframes glitch{
-      0%,100%{transform:translate(0)}
-      20%{transform:translate(-2px,2px)}
-      40%{transform:translate(2px,-2px)}
-      60%{transform:translate(-1px,-1px)}
-      80%{transform:translate(1px,1px)}
+    body { margin:0; overflow:hidden; background:#020617; }
+    video { display:none; }
+    canvas { position:fixed; inset:0; }
+    #text {
+      position:fixed; top:20px; left:20px;
+      color:#67e8f9; font-family:monospace;
+      z-index:10;
     }
   </style>
 </head>
-
 <body>
+  <div id="text">Show your hand to the camera ✨</div>
+  <video id="video" autoplay playsinline></video>
   <canvas id="canvas"></canvas>
 
-  <div class="content">
-    <p class="small">SYSTEM MESSAGE LOADING...</p>
-    <h1>I LOVE YOU</h1>
-    <p class="sub">coded just for you ♡</p>
-  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
   <script>
+    const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
     canvas.width = innerWidth;
     canvas.height = innerHeight;
 
+    let handPoints = [];
     let particles = [];
 
-    for(let i = 0; i < 120; i++){
+    for (let i = 0; i < 500; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 1,
-        dx: (Math.random() - 0.5) * 1,
-        dy: (Math.random() - 0.5) * 1
+        vx: 0,
+        vy: 0,
+        size: Math.random() * 3 + 1
       });
     }
 
-    function draw(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+    const hands = new Hands({
+      locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
 
-      particles.forEach(p=>{
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        ctx.fillStyle="#22d3ee";
-        ctx.shadowBlur=15;
-        ctx.shadowColor="#22d3ee";
-        ctx.fill();
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7
+    });
 
-        p.x += p.dx;
-        p.y += p.dy;
+    hands.onResults(results => {
+      handPoints = [];
 
-        if(p.x < 0 || p.x > canvas.width) p.dx *= -1;
-        if(p.y < 0 || p.y > canvas.height) p.dy *= -1;
-      });
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
 
-      for(let i=0;i<particles.length;i++){
-        for(let j=i+1;j<particles.length;j++){
-          let a = particles[i];
-          let b = particles[j];
-          let dist = Math.hypot(a.x-b.x,a.y-b.y);
-
-          if(dist < 120){
-            ctx.beginPath();
-            ctx.moveTo(a.x,a.y);
-            ctx.lineTo(b.x,b.y);
-            ctx.strokeStyle="rgba(34,211,238,0.15)";
-            ctx.stroke();
-          }
-        }
+        landmarks.forEach(point => {
+          handPoints.push({
+            x: point.x * canvas.width,
+            y: point.y * canvas.height
+          });
+        });
       }
+    });
 
-      requestAnimationFrame(draw);
+    const camera = new Camera(video, {
+      onFrame: async () => {
+        await hands.send({ image: video });
+      },
+      width: 640,
+      height: 480
+    });
+
+    camera.start();
+
+    function animate() {
+      ctx.fillStyle = "rgba(2, 6, 23, 0.18)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        let target = null;
+        let minDist = 9999;
+
+        handPoints.forEach(h => {
+          const d = Math.hypot(p.x - h.x, p.y - h.y);
+          if (d < minDist) {
+            minDist = d;
+            target = h;
+          }
+        });
+
+        if (target && minDist < 260) {
+          p.vx += (target.x - p.x) * 0.002;
+          p.vy += (target.y - p.y) * 0.002;
+        } else {
+          p.vx += (Math.random() - 0.5) * 0.08;
+          p.vy += (Math.random() - 0.5) * 0.08;
+        }
+
+        p.vx *= 0.94;
+        p.vy *= 0.94;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = "#22d3ee";
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "#22d3ee";
+        ctx.fill();
+      });
+
+      handPoints.forEach(h => {
+        ctx.beginPath();
+        ctx.arc(h.x, h.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "#f472b6";
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "#f472b6";
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
     }
 
-    draw();
+    animate();
 
-    addEventListener("resize",()=>{
+    addEventListener("resize", () => {
       canvas.width = innerWidth;
       canvas.height = innerHeight;
     });
